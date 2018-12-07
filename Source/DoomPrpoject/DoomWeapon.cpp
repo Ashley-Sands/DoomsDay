@@ -3,7 +3,7 @@
 #include "DoomWeapon.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/PointLightComponent.h"
-
+#include "Engine/World.h"
 
 // Sets default values
 ADoomWeapon::ADoomWeapon()
@@ -45,6 +45,30 @@ void ADoomWeapon::BeginPlay()
 void ADoomWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+}
+
+void ADoomWeapon::OnWeaponShoot()
+{
+
+}
+
+bool ADoomWeapon::Shoot()
+{
+
+	if (GetWorld()->GetTimeSeconds() < nextFire)
+		return false;
+
+	if (currentAmmo <= 0)
+		return false;
+
+	currentAmmo--;
+	nextFire = GetWorld()->GetTimeSeconds + rateOfFire;
+
+	OnWeaponShoot();
+	BPEVENT_OnWeaponShoot();
+
+	return true;
 
 }
 
