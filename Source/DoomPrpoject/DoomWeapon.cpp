@@ -63,7 +63,7 @@ bool ADoomWeapon::Shoot()
 		return false;
 
 	currentAmmo--;
-	nextFire = GetWorld()->GetTimeSeconds + rateOfFire;
+	nextFire = GetWorld()->GetTimeSeconds() + rateOfFire;
 
 	OnWeaponShoot();
 	BPEVENT_OnWeaponShoot();
