@@ -55,16 +55,20 @@ void ADoomWeapon::OnWeaponShoot()
 
 bool ADoomWeapon::Shoot()
 {
-
+	// has enought time pasted
 	if (GetWorld()->GetTimeSeconds() < nextFire)
 		return false;
 
+	// do we have ammo
 	if (currentAmmo <= 0)
 		return false;
 
+	//decress ammo
 	currentAmmo--;
+	//update time
 	nextFire = GetWorld()->GetTimeSeconds() + rateOfFire;
 
+	// call shoot functions.
 	OnWeaponShoot();
 	BPEVENT_OnWeaponShoot();
 

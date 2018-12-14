@@ -3,6 +3,9 @@
 #include "doomPlayer.h"
 #include "Components/InputComponent.h"
 #include "Engine.h"
+#include "Camera/CameraComponent.h"
+#include "WeaponInvotory.h"
+#include "DoomWeapon.h"
 
 // Sets default values
 AdoomPlayer::AdoomPlayer()
@@ -10,13 +13,17 @@ AdoomPlayer::AdoomPlayer()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	camera = CreateDefaultSubobject<UCameraComponent>("CAM");
+	camera->SetupAttachment(GetRootComponent());
+
+	invotory = CreateDefaultSubobject<UWeaponInvotory>("Invotory");
 }
 
 // Called when the game starts or when spawned
 void AdoomPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	
+		
 }
 
 void AdoomPlayer::MoveForward(float scale)
@@ -60,6 +67,17 @@ void AdoomPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	UpdateShootingAction();
+
+}
+
+void AdoomPlayer::UpdateShootingAction()
+{
+	if (!isShooting)
+		return;
+
+	if (invotory->FireCurrentWeapon())
+		BPEVENT_OnCurrentWeaponShoot();
 }
 
 // Called to bind functionality to input
@@ -73,5 +91,28 @@ void AdoomPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAxis("Turning", this, &AdoomPlayer::Turn);
 	PlayerInputComponent->BindAxis("Pitch", this, &AdoomPlayer::Pitch);
 
+	PlayerInputComponent->BindAction("Shoot", EInputEvent::IE_Pressed, this, &AdoomPlayer::ShootPressAction);
+	PlayerInputComponent->BindAction("Shoot", EInputEvent::IE_Released, this, &AdoomPlayer::ShootReleaseAction);
+	PlayerInputComponent->BindAction("Cycle", EInputEvent::IE_Pressed, this, &AdoomPlayer::CycleWeaponAction);
+
 }
 
+void AdoomPlayer::ShootPressAction()
+{
+	if (invotory->GetCurrentWeapon()->isSemiAuto && invotory->FireCurrentWeapon())
+		BPEVENT_OnCurrentWeaponShoot();
+	else
+		isShooting = true;
+
+}
+
+void AdoomPlayer::ShootReleaseAction()
+{
+	isShooting = false;
+}
+
+void AdoomPlayer::CycleWeaponAction()
+{
+	if (invotory->CanSwitchWeapon() && invotory->SwitchWeapon())
+		BPEVENT_OnCurrentWeaponSwitched();
+}
